@@ -51,7 +51,7 @@ return [
             'rules' => $params['urlRules']['frontend']
         ],
         'request' => [
-            'cookieValidationKey' => getenv('COOKIE_VALIDATION_KEY'),
+            'cookieValidationKey' => $_ENV['COOKIE_VALIDATION_KEY'] ?? $_SERVER['COOKIE_VALIDATION_KEY'] ?? getenv('COOKIE_VALIDATION_KEY'),
             'parsers' => [
                 'application/json' => yii\web\JsonParser::class,
                 'application/json; charset=UTF-8' => yii\web\JsonParser::class,

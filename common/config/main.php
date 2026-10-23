@@ -16,12 +16,12 @@ $config = [
     'components' => [
         'db' => [
             'class' => yii\db\Connection::class,
-            'dsn' => getenv('DB_DSN'),
-            'username' => getenv('DB_USERNAME'),
-            'password' => getenv('DB_PASSWORD'),
+            'dsn' => $_ENV['DB_DSN'] ?? $_SERVER['DB_DSN'] ?? getenv('DB_DSN'),
+            'username' => $_ENV['DB_USERNAME'] ?? $_SERVER['DB_USERNAME'] ?? getenv('DB_USERNAME'),
+            'password' => $_ENV['DB_PASSWORD'] ?? $_SERVER['DB_PASSWORD'] ?? getenv('DB_PASSWORD'),
             'charset' => 'utf8',
-            'enableSchemaCache' => getenv('DB_SCHEMA_CACHE'),
-            'schemaCacheDuration' => getenv('DB_SCHEMA_CACHE_DURATION'),
+            'enableSchemaCache' => (bool)($_ENV['DB_SCHEMA_CACHE'] ?? $_SERVER['DB_SCHEMA_CACHE'] ?? getenv('DB_SCHEMA_CACHE')),
+            'schemaCacheDuration' => $_ENV['DB_SCHEMA_CACHE_DURATION'] ?? $_SERVER['DB_SCHEMA_CACHE_DURATION'] ?? getenv('DB_SCHEMA_CACHE_DURATION'),
             'schemaCache' => 'cache'
         ],
         'cache' => [

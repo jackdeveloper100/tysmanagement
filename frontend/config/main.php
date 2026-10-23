@@ -40,7 +40,7 @@ return [
             ],
         ],
         'request' => [
-            'cookieValidationKey' => getenv('COOKIE_VALIDATION_KEY'),
+            'cookieValidationKey' => $_ENV['COOKIE_VALIDATION_KEY'] ?? $_SERVER['COOKIE_VALIDATION_KEY'] ?? getenv('COOKIE_VALIDATION_KEY'),
         ],
     ],
     'params' => $params,
