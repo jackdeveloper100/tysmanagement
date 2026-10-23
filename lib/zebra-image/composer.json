@@ -1,0 +1,15 @@
+{
+    "name": "stefangabos/zebra_image",
+    "description": "Local copy of stefangabos/zebra_image 3.0.0 with imagedestroy() removed for PHP 8.5",
+    "type": "library",
+    "version": "3.0.0",
+    "license": "LGPL-3.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "stefangabos\\Zebra_Image\\": "./"
+        }
+    }
+}

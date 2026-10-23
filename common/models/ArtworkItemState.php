@@ -3,9 +3,11 @@
 namespace common\models;
 
 use alexBond\thumbler\Thumbler;
-use Intervention\Image\Exception\NotReadableException;
-use Intervention\Image\Exception\NotSupportedException;
-use Intervention\Image\ImageManagerStatic as Image;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\Exceptions\DecoderException;
+use Intervention\Image\Exceptions\NotSupportedException;
+use Intervention\Image\ImageManager;
 use Yii;
 use yii\helpers\FileHelper;
 
@@ -158,11 +160,11 @@ class ArtworkItemState extends \yii\db\ActiveRecord
                 $image->writeImage($previewFilename);
             } else {
                 try {
-                    $image = Image::make($this->getFilePath());
-                    $image->save($previewFilename);
+                    $manager = new ImageManager(extension_loaded('imagick') ? new ImagickDriver() : new GdDriver());
+                    $manager->read($this->getFilePath())->save($previewFilename);
                 } catch (NotSupportedException $e) {
                     \Yii::info($e);
-                } catch (NotReadableException $e) {
+                } catch (DecoderException $e) {
                     \Yii::info($e);
                 }
             }

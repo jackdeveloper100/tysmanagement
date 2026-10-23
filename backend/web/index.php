@@ -1,7 +1,7 @@
 <?php
 require(__DIR__ . '/../../vendor/autoload.php');
 
-$dotenv = new \Dotenv\Dotenv(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);
+$dotenv = \Dotenv\Dotenv::createUnsafeImmutable(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);
 $dotenv->load();
 
 defined('YII_DEBUG') or define('YII_DEBUG', getenv('YII_DEBUG'));

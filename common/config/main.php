@@ -1,4 +1,14 @@
 <?php
+$smtpDsn = 'null://null';
+if (getenv('SMTP_HOST')) {
+    $smtpScheme = strtolower((string)getenv('SMTP_ENCRYPTION')) === 'ssl' ? 'smtps' : 'smtp';
+    $smtpAuth = getenv('SMTP_USERNAME') !== false && getenv('SMTP_USERNAME') !== ''
+        ? rawurlencode(getenv('SMTP_USERNAME')) . ':' . rawurlencode((string)getenv('SMTP_PASSWORD')) . '@'
+        : '';
+    $smtpPort = getenv('SMTP_PORT') ? ':' . getenv('SMTP_PORT') : '';
+    $smtpDsn = $smtpScheme . '://' . $smtpAuth . getenv('SMTP_HOST') . $smtpPort;
+}
+
 $config = [
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
     'language' => 'en',
@@ -28,16 +38,11 @@ $config = [
             'class' => yii\caching\FileCache::class
         ],
         'mailer' => [
-            'class' => yii\swiftmailer\Mailer::class,
+            'class' => yii\symfonymailer\Mailer::class,
             'viewPath' => '@common/mail',
-            'useFileTransport' => getenv('MAILER_FILE_TRANSFER'),
+            'useFileTransport' => (bool)getenv('MAILER_FILE_TRANSFER'),
             'transport' => [
-                'class' => 'Swift_SmtpTransport',
-                'host' => getenv('SMTP_HOST'),
-                'username' => getenv('SMTP_USERNAME'),
-                'password' => getenv('SMTP_PASSWORD'),
-                'port' => getenv('SMTP_PORT'),
-                'encryption' => getenv('SMTP_ENCRYPTION')
+                'dsn' => $smtpDsn,
             ]
         ],
         'formatter' => [
@@ -68,21 +73,16 @@ if (YII_DEBUG && !YII_ENV_TEST) {
 }
 
 if (!empty(getenv('SENTRY_DSN'))) {
-    $config['components']['sentry'] = [
-        'class' => \mito\sentry\Component::class,
-        'dsn' => getenv('SENTRY_DSN'),
-        'enabled' => !empty(getenv('SENTRY_DSN')),
-        'environment' => getenv('YII_ENV'),
-    ];
     $config['components']['log'] = [
         'targets' => [
             [
-                'class' => \mito\sentry\Target::class,
+                'class' => \common\components\SentryTarget::class,
+                'dsn' => getenv('SENTRY_DSN'),
+                'environment' => getenv('YII_ENV'),
                 'levels' => ['error', 'warning'],
                 'except' => [
-                    \yii\web\NotFoundHttpException::class,
-                    \yii\base\InvalidRouteException::class,
-                    'yii\web\HttpException:404'
+                    'yii\web\HttpException:404',
+                    'yiiase\InvalidRouteException',
                 ]
             ]
         ],

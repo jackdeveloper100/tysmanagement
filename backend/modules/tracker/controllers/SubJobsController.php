@@ -7,9 +7,9 @@ use common\models\SCEProjectTracker;
 use common\models\SubJob;
 use backend\modules\tracker\models\SubJobForm;
 use backend\modules\tracker\models\SubJobsSearch;
-use PHPExcel;
-use PHPExcel_IOFactory;
-use PHPExcel_Style_Alignment;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Yii;
 use yii\web\NotFoundHttpException;
 
@@ -107,7 +107,7 @@ class SubJobsController extends Controller
          */
         $models = SubJob::find()->where(['job_id' => $parent->id])->orderBy(['created_at' => SORT_ASC])->all();
 
-        $doc = new PHPExcel();
+        $doc = new Spreadsheet();
         $doc->setActiveSheetIndex(0);
 
         $out = [
@@ -138,9 +138,9 @@ class SubJobsController extends Controller
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1')
             ->getFont()->setBold(true);
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1')
-            ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . $doc->getActiveSheet()->getHighestRow())
-            ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+            ->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         foreach (range('A', $doc->getActiveSheet()->getHighestDataColumn()) as $col) {
             $doc->getActiveSheet()
                 ->getColumnDimension($col)
@@ -149,13 +149,13 @@ class SubJobsController extends Controller
         $doc->getActiveSheet()->setAutoFilter('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1');
 
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="tys_projects_' . date('m.d.Y_h-i') . '.xls"');
-        header('Cache-Control: max-age=0');
-
-        // Do your stuff here
-        $writer = PHPExcel_IOFactory::createWriter($doc, 'Excel5');
-
+        $writer = IOFactory::createWriter($doc, 'Xls');
+        ob_start();
         $writer->save('php://output');
+        $content = ob_get_clean();
+
+        return Yii::$app->response->sendContentAsFile($content, 'tys_projects_' . date('m.d.Y_h-i') . '.xls', [
+            'mimeType' => 'application/vnd.ms-excel',
+        ]);
     }
 }

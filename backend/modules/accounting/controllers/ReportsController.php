@@ -7,9 +7,9 @@ use common\models\enum\TaskItem;
 use common\models\Job;
 use common\models\SCEProjectTracker;
 use common\models\Task;
-use PHPExcel;
-use PHPExcel_IOFactory;
-use PHPExcel_Style_Alignment;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Yii;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
@@ -79,7 +79,7 @@ class ReportsController extends Controller
 
     public function actionGenerateExcelProjects()
     {
-        $doc = new PHPExcel();
+        $doc = new Spreadsheet();
         $doc->setActiveSheetIndex(0);
 
         $q = \common\models\Job::find()
@@ -121,9 +121,9 @@ class ReportsController extends Controller
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1')
             ->getFont()->setBold(true);
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1')
-            ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . $doc->getActiveSheet()->getHighestRow())
-            ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+            ->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         foreach (range('A', $doc->getActiveSheet()->getHighestDataColumn()) as $col) {
             $doc->getActiveSheet()
                 ->getColumnDimension($col)
@@ -132,19 +132,19 @@ class ReportsController extends Controller
         $doc->getActiveSheet()->setAutoFilter('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1');
 
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="tys_projects_' . date('m.d.Y_h-i') . '.xls"');
-        header('Cache-Control: max-age=0');
-
-        // Do your stuff here
-        $writer = PHPExcel_IOFactory::createWriter($doc, 'Excel5');
-
+        $writer = IOFactory::createWriter($doc, 'Xls');
+        ob_start();
         $writer->save('php://output');
+        $content = ob_get_clean();
+
+        return Yii::$app->response->sendContentAsFile($content, 'tys_projects_' . date('m.d.Y_h-i') . '.xls', [
+            'mimeType' => 'application/vnd.ms-excel',
+        ]);
     }
 
     public function actionGenerateExcel()
     {
-        $doc = new PHPExcel();
+        $doc = new Spreadsheet();
         $doc->setActiveSheetIndex(0);
 
         $q = \common\models\Task::find()
@@ -317,7 +317,7 @@ class ReportsController extends Controller
         $doc->getActiveSheet()->getStyle('D1:D' . $doc->getActiveSheet()->getHighestRow())->getAlignment()->setWrapText(true);
         // center everything vertically
         $doc->getActiveSheet()->getStyle('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . $doc->getActiveSheet()->getHighestRow())
-            ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+            ->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         // auto size all columns
         foreach (range('A', $doc->getActiveSheet()->getHighestDataColumn()) as $col) {
             $doc->getActiveSheet()
@@ -328,13 +328,13 @@ class ReportsController extends Controller
         $doc->getActiveSheet()->setAutoFilter('A1:' . $doc->getActiveSheet()->getHighestDataColumn() . '1');
 
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="tys_export_' . date('m.d.Y_h-i') . '.xls"');
-        header('Cache-Control: max-age=0');
-
-        // Do your stuff here
-        $writer = PHPExcel_IOFactory::createWriter($doc, 'Excel5');
-
+        $writer = IOFactory::createWriter($doc, 'Xls');
+        ob_start();
         $writer->save('php://output');
+        $content = ob_get_clean();
+
+        return Yii::$app->response->sendContentAsFile($content, 'tys_export_' . date('m.d.Y_h-i') . '.xls', [
+            'mimeType' => 'application/vnd.ms-excel',
+        ]);
     }
 }

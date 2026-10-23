@@ -14,6 +14,17 @@ use yii\helpers\ArrayHelper;
 
 class ImportController extends Controller
 {
+    /**
+     * Parses a CSV HTTP response using the first line as column names.
+     */
+    private function csvRows($response)
+    {
+        $reader = Reader::createFromString((string)$response->getBody());
+        $reader->setHeaderOffset(0);
+
+        return $reader->getRecords();
+    }
+
     public function actionUsers()
     {
         $url = $this->prompt('Url to CSV file with USERS: ');
@@ -24,13 +35,7 @@ class ImportController extends Controller
         $c = new Client();
         $r = $c->get($url);
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
 
             $model = new User();
             $model->first_name = $row['FirstName'];
@@ -60,13 +65,7 @@ class ImportController extends Controller
         $c = new Client();
         $r = $c->get($url);
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
 
             $model = new \common\models\Client();
             $model->name = $row['ClientName'];
@@ -98,13 +97,7 @@ class ImportController extends Controller
 
         $subJobs = [];
 
-        $reader = Reader::createFromString($r2->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r2) as $row) {
 
             $subJobs[$row['JobID']][] = [
                 'internal_id' => $row['SubJobNumber'],
@@ -129,13 +122,7 @@ class ImportController extends Controller
             'Amy/Charlie' => $users['Charlie Shames']
         ];
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
 
             $model = new Job();
 
@@ -182,13 +169,7 @@ class ImportController extends Controller
         $c = new Client();
         $r = $c->get($url_users);
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
 
             $users[$row['UserID']] = User::findByEmail($row['Email'])->id;
         }
@@ -198,13 +179,7 @@ class ImportController extends Controller
         $c = new Client();
         $r = $c->get($url_jobs);
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
 
             $jobs[$row['JobID']] = Job::find()->where(['internal_id' => $row['JobNumber']])->one()->id;
         }
@@ -215,13 +190,7 @@ class ImportController extends Controller
         $c = new Client();
         $r = $c->get($url);
 
-        $reader = Reader::createFromString($r->getBody());
-        $first = true;
-        foreach ($reader->fetchAssoc($reader->fetchOne()) as $index => $row) {
-            if ($first) {
-                $first = false;
-                continue;
-            }
+        foreach ($this->csvRows($r) as $row) {
             if (!isset($jobs[$row['JobID']]) || !isset($users[$row['UserID']])) {
                 continue;
             }
